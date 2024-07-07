@@ -1,6 +1,4 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import confetti from "canvas-confetti";
 import "./App.css";
 import { Square } from "./components/Square.jsx";
@@ -9,20 +7,31 @@ import { checkWinnerFrom, checkEndGame } from "./logic/board.js";
 import { WinnerModal } from "./components/WinnerModal.jsx";
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [board, setBoard] = useState(() => {
 
-  const [turn, setTurn] = useState(TURNS.X);
+    const boardFromStorage = window.localStorage.getItem("board");
+    return boardFromStorage
+      ? JSON.parse(boardFromStorage)
+      : Array(9).fill(null);
+  });
+
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn')
+    return turnFromStorage ?? TURNS.X
+  });
 
   const [winner, setWinner] = useState(null); //null es que no hay ganador, false es que hay empate
 
-
   //reseteamos el estado del componente, no la página q sería un location reload
   const resetGame = () => {
-    setBoard(Array(9).fill(null))
-    setTurn(TURNS.X)
-    setWinner(null)
-  }
+    setBoard(Array(9).fill(null));
+    setTurn(TURNS.X);
+    setWinner(null);
 
+    window.localStorage.removeItem('board')
+    window.localStorage.removeItem('turn')
+
+  };
 
   const updateBoard = (index) => {
     if (board[index] || winner) return; //si en el índice(board) hay algo, no actualizamos la posición. Evitamos el cambio de x->o
@@ -40,18 +49,23 @@ function App() {
     //cambiar el turno
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
     setTurn(newTurn);
+
+    //guardar partida
+    window.localStorage.setItem("board", JSON.stringify(newBoard));
+    window.localStorage.setItem("turn", newTurn);
+
     //revisar si hay algún ganador
     const newWinner = checkWinnerFrom(newBoard);
     if (newWinner) {
-      confetti()
+      confetti();
       setWinner(newWinner); //actualiza el estado
     }
 
     //chequear si hay un empate para terminar el juego
     if (newWinner) {
-      setWinner(newWinner)
-    } else if (checkEndGame(newBoard)){
-      setWinner(false) //empate
+      setWinner(newWinner);
+    } else if (checkEndGame(newBoard)) {
+      setWinner(false); //empate
     }
   };
 
