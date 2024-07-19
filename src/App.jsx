@@ -32,9 +32,6 @@ function App() {
 
   };
 
-  useEffect(()=> {
-    console.log('useEffect')
-  }, [winner])
 
   const updateBoard = (index) => {
     if (board[index] || winner) return; //si en el índice(board) hay algo, no actualizamos la posición. Evitamos el cambio de x->o
